@@ -61,7 +61,7 @@ const pool = new Pool({
 });
 
 // Tester la connexion à la base de données
-pool.connect((err, client, done) => {
+pool.connect((err: any, client: any, done: any) => {
   if (err) {
     console.error('Erreur de connexion à PostgreSQL:', err);
   } else {
@@ -323,7 +323,7 @@ app.get('/api/performance', async (req, res) => {
        ORDER BY to_char(updated_at, 'D')::int` ,
       [companyId]
     );
-    const weeklyData = weekDataResult.rows.map(row => ({
+    const weeklyData = weekDataResult.rows.map((row: any) => ({
       day: row.day,
       messages: parseInt(row.messages, 10),
       users: parseInt(row.users, 10)
@@ -338,7 +338,7 @@ app.get('/api/performance', async (req, res) => {
        ORDER BY to_char(updated_at, 'MM')::int` ,
       [companyId]
     );
-    const monthlyData = monthDataResult.rows.map(row => ({
+    const monthlyData = monthDataResult.rows.map((row: any) => ({
       month: row.month,
       messages: parseInt(row.messages, 10),
       users: parseInt(row.users, 10)
@@ -385,7 +385,7 @@ app.get('/api/conversations', async (req, res) => {
       [companyId]
     );
     // On prépare les données pour le frontend
-    const conversations = result.rows.map(row => {
+    const conversations = result.rows.map((row: any) => {
       let lastMessage = '';
       let messageCount = 0;
       try {
