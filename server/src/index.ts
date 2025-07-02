@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import type { Request, Response } from 'express';
 import cors from 'cors';
 import { Pool } from 'pg';
@@ -16,7 +16,7 @@ const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024 // Limite à 5MB
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: Request, file: Express.Multer.File, cb: any) => {
     const allowedTypes = [
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -289,7 +289,7 @@ const handleUpdatePrompt = async (req: Request, res: Response): Promise<void> =>
 };
 
 // Nouvelle route pour les stats de performance
-app.get('/api/performance', async (req, res) => {
+app.get('/api/performance', async (req: Request, res: Response) => {
   const companyId = req.query.companyId;
   if (!companyId) {
     res.status(400).json({ error: 'companyId requis' });
@@ -372,7 +372,7 @@ app.get('/api/performance', async (req, res) => {
   }
 });
 
-app.get('/api/conversations', async (req, res) => {
+app.get('/api/conversations', async (req: Request, res: Response) => {
   const companyId = req.query.companyId;
   if (!companyId) {
     res.status(400).json({ error: 'companyId requis' });
