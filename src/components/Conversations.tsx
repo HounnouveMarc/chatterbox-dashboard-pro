@@ -1,4 +1,4 @@
-
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -6,56 +6,38 @@ import { Badge } from "@/components/ui/badge";
 import { MessageSquare, ExternalLink, Clock, User } from "lucide-react";
 
 const Conversations = () => {
-  // Données simulées des conversations
-  const conversations = [
-    {
-      id: 1,
-      userName: "Marie Dupont",
-      phone: "+33612345678",
-      lastMessage: "Merci pour votre aide !",
-      lastActivity: "Il y a 5 min",
-      messageCount: 12,
-      status: "active",
-    },
-    {
-      id: 2,
-      userName: "Jean Martin",
-      phone: "+33687654321",
-      lastMessage: "J'ai besoin d'informations sur vos produits",
-      lastActivity: "Il y a 1h",
-      messageCount: 8,
-      status: "waiting",
-    },
-    {
-      id: 3,
-      userName: "Sophie Bernard",
-      phone: "+33698765432",
-      lastMessage: "Ma commande a-t-elle été expédiée ?",
-      lastActivity: "Il y a 2h",
-      messageCount: 5,
-      status: "resolved",
-    },
-    {
-      id: 4,
-      userName: "Pierre Durand",
-      phone: "+33623456789",
-      lastMessage: "Bonjour, je cherche des informations",
-      lastActivity: "Il y a 3h",
-      messageCount: 3,
-      status: "active",
-    },
-    {
-      id: 5,
-      userName: "Laura Moreau",
-      phone: "+33634567890",
-      lastMessage: "Parfait, merci beaucoup !",
-      lastActivity: "Il y a 4h",
-      messageCount: 15,
-      status: "resolved",
-    },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [conversations, setConversations] = useState([]);
 
-  const getStatusColor = (status: string) => {
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+      setError("Utilisateur non connecté");
+      setLoading(false);
+      return;
+    }
+    const user = JSON.parse(userData);
+    const companyId = user.company_id;
+    if (!companyId) {
+      setError("Aucun companyId trouvé");
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    fetch(`http://localhost:3000/api/conversations?companyId=${companyId}`)
+      .then(res => res.json())
+      .then(data => {
+        setConversations(data.conversations || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError("Erreur lors du chargement des conversations");
+        setLoading(false);
+      });
+  }, []);
+
+  const getStatusColor = (status) => {
     switch (status) {
       case "active":
         return "bg-green-100 text-green-800";
@@ -68,7 +50,7 @@ const Conversations = () => {
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status) => {
     switch (status) {
       case "active":
         return "Actif";
@@ -81,11 +63,18 @@ const Conversations = () => {
     }
   };
 
-  const openWhatsApp = (phone: string) => {
+  const openWhatsApp = (phone) => {
     const whatsappUrl = `https://wa.me/${phone.replace(/\s+/g, '').replace('+', '')}`;
     window.open(whatsappUrl, '_blank');
     console.log("Redirection vers WhatsApp:", whatsappUrl);
   };
+
+  if (loading) {
+    return <div className="text-center py-10 text-blue-600 font-bold">Chargement des conversations...</div>;
+  }
+  if (error) {
+    return <div className="text-center py-10 text-red-600 font-bold">{error}</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -111,7 +100,6 @@ const Conversations = () => {
             </div>
           </CardContent>
         </Card>
-        
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
@@ -127,7 +115,6 @@ const Conversations = () => {
             </div>
           </CardContent>
         </Card>
-        
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
@@ -158,34 +145,31 @@ const Conversations = () => {
                 <div className="flex items-center gap-4">
                   <Avatar>
                     <AvatarFallback className="bg-blue-100 text-blue-600">
-                      {conversation.userName.split(' ').map(n => n[0]).join('')}
+                      {conversation.userName ? conversation.userName.split(' ').map(n => n[0]).join('') : '??'}
                     </AvatarFallback>
                   </Avatar>
-                  
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-gray-900">{conversation.userName}</h3>
+                      <h3 className="font-semibold text-gray-900">{conversation.userName || conversation.user_whatsapp_id}</h3>
                       <Badge className={getStatusColor(conversation.status)}>
                         {getStatusText(conversation.status)}
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-600 mb-1">{conversation.phone}</p>
+                    <p className="text-sm text-gray-600 mb-1">{conversation.phone || conversation.user_whatsapp_id}</p>
                     <p className="text-sm text-gray-500 truncate max-w-md">
-                      {conversation.lastMessage}
+                      {conversation.lastMessage || (conversation.messages && conversation.messages.length > 0 ? conversation.messages[conversation.messages.length-1].text : '')}
                     </p>
                   </div>
                 </div>
-                
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <p className="text-sm font-medium text-gray-900">
-                      {conversation.messageCount} messages
+                      {conversation.messageCount || (conversation.messages ? conversation.messages.length : 0)} messages
                     </p>
-                    <p className="text-sm text-gray-500">{conversation.lastActivity}</p>
+                    <p className="text-sm text-gray-500">{conversation.lastActivity || (conversation.updated_at ? new Date(conversation.updated_at).toLocaleString() : '')}</p>
                   </div>
-                  
                   <Button
-                    onClick={() => openWhatsApp(conversation.phone)}
+                    onClick={() => openWhatsApp(conversation.phone || conversation.user_whatsapp_id)}
                     className="bg-green-600 hover:bg-green-700 text-white"
                     size="sm"
                   >
