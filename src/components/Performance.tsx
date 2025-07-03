@@ -33,7 +33,7 @@ const Performance = () => {
       return;
     }
     setLoading(true);
-    fetch(`http://localhost:3000/api/performance?companyId=${companyId}`)
+    fetch(`https://chatterbox-dashboard-pro.onrender.com/api/performance?companyId=${companyId}`)
       .then(res => res.json())
       .then(data => {
         setStats(data.stats || []);
