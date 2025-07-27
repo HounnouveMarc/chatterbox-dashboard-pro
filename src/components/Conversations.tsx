@@ -25,7 +25,7 @@ const Conversations = () => {
       return;
     }
     setLoading(true);
-    fetch(`https://chatterbox-dashboard-pro.onrender.com/api/performance?companyId=${companyId}`)
+    fetch(`https://chatterbox-dashboard-pro.onrender.com/api/conversations?companyId=${companyId}`)
       .then(res => res.json())
       .then(data => {
         setConversations(data.conversations || []);
